@@ -7,6 +7,7 @@ interface Item {
   text: string
   correctGroupId: string
   image?: string
+  icon?: string
 }
 
 interface Group {
@@ -59,11 +60,9 @@ export function StartScreen({ title, description, items, groups, onStart }: Star
                     animation: `fade-in-up 0.5s cubic-bezier(0.32, 0.72, 0.3, 1) ${idx * 0.06}s both`,
                   }}
                 >
-                  <img
-                    src={`/.jpg?height=120&width=120&query=${encodeURIComponent(item.text)}`}
-                    alt={item.text}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
+                  <div className="text-6xl group-hover:scale-110 transition-transform duration-300 flex items-center justify-center w-full h-full">
+                    {(item as any).icon || "📦"}
+                  </div>
                 </div>
               ))}
             </div>

@@ -10,6 +10,7 @@ interface Item {
   text: string
   correctGroupId: string
   image?: string
+  icon?: string
 }
 
 interface Group {
@@ -175,8 +176,8 @@ export function DragDropGame({ title, items, groups, onComplete }: DragDropGameP
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                        <div className="text-4xl opacity-60">📦</div>
+                      <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex flex-col items-center justify-center gap-2">
+                        <div className="text-4xl">{item.icon || "📦"}</div>
                       </div>
                     )}
                     <div className="item-label">{item.text}</div>
@@ -278,7 +279,7 @@ export function DragDropGame({ title, items, groups, onComplete }: DragDropGameP
                             />
                           ) : (
                             <div className="w-full h-full bg-gradient-to-br from-accent/20 to-secondary/20 flex items-center justify-center">
-                              <span className="text-2xl opacity-60">📦</span>
+                              <span className="text-2xl">{item.icon || "📦"}</span>
                             </div>
                           )}
                           <div className="item-label">{item.text}</div>
