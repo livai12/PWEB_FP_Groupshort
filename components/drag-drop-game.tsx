@@ -33,7 +33,10 @@ export function DragDropGame({ title, items, groups, onComplete }: DragDropGameP
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null)
   const [draggedFrom, setDraggedFrom] = useState<string | null>(null)
   const [draggedOverGroup, setDraggedOverGroup] = useState<string | null>(null)
+  const [selectedItemImage, setSelectedItemImage] = useState<string | null>(null)
+  const [copyFeedback, setCopyFeedback] = useState(false)
   const gameRef = useRef<HTMLDivElement>(null)
+  const imageRef = useRef<HTMLImageElement>(null)
 
   useEffect(() => {
     const shuffled = [...items]
@@ -44,7 +47,42 @@ export function DragDropGame({ title, items, groups, onComplete }: DragDropGameP
         isCorrect: undefined,
       }))
     setGameItems(shuffled)
+    // Set first item image as selected
+    if (shuffled.length > 0 && shuffled[0].image) {
+      setSelectedItemImage(shuffled[0].image)
+    }
   }, [items])
+
+  const handleCopyImage = async () => {
+    if (!imageRef.current) return
+    
+    try {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+      
+      img.onload = async () => {
+        canvas.width = img.width
+        canvas.height = img.height
+        ctx?.drawImage(img, 0, 0)
+        
+        canvas.toBlob(async (blob) => {
+          if (blob) {
+            await navigator.clipboard.write([
+              new ClipboardItem({ 'image/png': blob })
+            ])
+            setCopyFeedback(true)
+            setTimeout(() => setCopyFeedback(false), 2000)
+          }
+        })
+      }
+      
+      img.src = selectedItemImage || ''
+    } catch (err) {
+      console.error('Failed to copy image:', err)
+    }
+  }
 
   const handleDragStart = (itemId: string, fromGroup?: string) => {
     setDraggedItemId(itemId)
@@ -135,6 +173,26 @@ export function DragDropGame({ title, items, groups, onComplete }: DragDropGameP
         </div>
       </div>
 
+      {/* Large Image Display */}
+      {selectedItemImage && (
+        <div className="animate-fade-in-up bg-gradient-to-br from-primary/10 to-accent/10 rounded-lg p-6 flex flex-col items-center justify-center">
+          <div className="relative group">
+            <img
+              ref={imageRef}
+              src={selectedItemImage}
+              alt="Current item"
+              className="max-h-64 max-w-full object-contain rounded-lg shadow-lg"
+            />
+            <button
+              onClick={handleCopyImage}
+              className="absolute top-2 right-2 bg-primary text-white px-3 py-1 rounded-lg text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-primary/90"
+            >
+              {copyFeedback ? '✓ Copied!' : 'Copy'}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
           <div
@@ -156,7 +214,8 @@ export function DragDropGame({ title, items, groups, onComplete }: DragDropGameP
                     setDraggedFrom(null)
                     setDraggedOverGroup(null)
                   }}
-                  className="cursor-move transition-all duration-200 select-none"
+                  onClick={() => item.image && setSelectedItemImage(item.image)}
+                  className="cursor-move transition-all duration-200 select-none hover:ring-2 hover:ring-primary rounded-lg"
                   style={{
                     animation: `fade-in-up 0.4s cubic-bezier(0.32, 0.72, 0.3, 1) ${index * 0.05}s both`,
                     transform: "scale(1)",
